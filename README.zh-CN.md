@@ -47,7 +47,6 @@ $$
 
 ```powershell
 node --check content-script.js
-node tests/render-smoke.mjs
 ```
 
 ## 许可
@@ -55,3 +54,5 @@ node tests/render-smoke.mjs
 MIT License。详见 [LICENSE](LICENSE)。
 
 Copyright (c) 2026 GaBoron.
+
+`GPT` 和 `ChatGPT` 是 OpenAI 的商标。本项目是独立浏览器扩展，并非 OpenAI 官方项目，也不代表获得 OpenAI 背书或赞助。

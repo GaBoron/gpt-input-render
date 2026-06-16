@@ -47,7 +47,6 @@ This is a lightweight renderer, not a full Markdown or TeX engine. It intentiona
 
 ```powershell
 node --check content-script.js
-node tests/render-smoke.mjs
 ```
 
 ## License
@@ -55,3 +54,5 @@ node tests/render-smoke.mjs
 MIT License. See [LICENSE](LICENSE).
 
 Copyright (c) 2026 GaBoron.
+
+`GPT` and `ChatGPT` are trademarks of OpenAI. This project is an independent browser extension and is not affiliated with, endorsed by, or sponsored by OpenAI.
