@@ -7,7 +7,7 @@ A small Manifest V3 browser extension that renders Markdown and common LaTeX syn
 - Watches ChatGPT message updates and finds user messages with `data-message-author-role="user"`.
 - Renders headings, emphasis, links, blockquotes, lists, fenced code blocks, inline code, and simple tables.
 - Renders common LaTeX delimiters: `$...$`, `\\(...\\)`, `$$...$$`, and `\\[...\\]`.
-- Supports a practical LaTeX subset: Greek letters, common operators, superscripts, subscripts, degree commands such as `^\\circ`, `\\frac{...}{...}`, `\\sqrt{...}`, `\\text{...}`, `\\mathrm{...}`, and common spacing commands.
+- Supports a practical LaTeX subset: Greek letters, common operators, function names such as `\\ln`, `\\log`, `\\exp`, `\\sin`, superscripts, subscripts, degree commands such as `^\\circ`, `\\frac{...}{...}`, `\\sqrt{...}`, `\\text{...}`, `\\mathrm{...}`, font commands, accents, and common spacing commands.
 - Adds a small `Raw` / `Render` toggle to each rendered user message.
 
 This extension is dependency-free and does not send message content anywhere.

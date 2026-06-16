@@ -12,19 +12,64 @@
     nu: "ν", xi: "ξ", pi: "π", rho: "ρ", sigma: "σ", tau: "τ",
     upsilon: "υ", phi: "φ", chi: "χ", psi: "ψ", omega: "ω",
     Gamma: "Γ", Delta: "Δ", Theta: "Θ", Lambda: "Λ", Xi: "Ξ", Pi: "Π",
-    Sigma: "Σ", Phi: "Φ", Psi: "Ψ", Omega: "Ω"
+    Sigma: "Σ", Phi: "Φ", Psi: "Ψ", Omega: "Ω",
+    varepsilon: "ε", vartheta: "ϑ", varpi: "ϖ", varrho: "ϱ",
+    varsigma: "ς", varphi: "φ"
   };
 
   const operators = {
-    times: "×", cdot: "·", div: "÷", pm: "±", mp: "∓", le: "≤", ge: "≥",
-    neq: "≠", approx: "≈", sim: "∼", infty: "∞", partial: "∂", nabla: "∇",
-    to: "→", leftarrow: "←", rightarrow: "→", leftrightarrow: "↔",
-    sum: "∑", prod: "∏", int: "∫", exists: "∃", forall: "∀", in: "∈",
-    notin: "∉", subset: "⊂", subseteq: "⊆", cup: "∪", cap: "∩",
+    times: "×", cdot: "·", div: "÷", pm: "±", mp: "∓",
+    le: "≤", leq: "≤", ge: "≥", geq: "≥", lt: "<", gt: ">",
+    neq: "≠", ne: "≠", equiv: "≡", approx: "≈", asymp: "≍", sim: "∼",
+    simeq: "≃", cong: "≅", propto: "∝", infty: "∞", partial: "∂", nabla: "∇",
+    hbar: "ℏ", ell: "ℓ", wp: "℘", Re: "ℜ", Im: "ℑ",
+    to: "→", gets: "←", leftarrow: "←", rightarrow: "→", leftrightarrow: "↔",
+    Leftarrow: "⇐", Rightarrow: "⇒", Leftrightarrow: "⇔", mapsto: "↦",
+    longleftarrow: "⟵", longrightarrow: "⟶", longleftrightarrow: "⟷",
+    Longleftarrow: "⟸", Longrightarrow: "⟹", Longleftrightarrow: "⟺",
+    uparrow: "↑", downarrow: "↓", updownarrow: "↕",
+    sum: "∑", prod: "∏", int: "∫", iint: "∬", iiint: "∭", oint: "∮",
+    exists: "∃", nexists: "∄", forall: "∀", neg: "¬", lnot: "¬", land: "∧",
+    wedge: "∧", lor: "∨", vee: "∨",
+    in: "∈", ni: "∋", notin: "∉", subset: "⊂", supset: "⊃",
+    subseteq: "⊆", supseteq: "⊇", cup: "∪", cap: "∩", setminus: "∖",
+    emptyset: "∅", varnothing: "∅", top: "⊤", bot: "⊥",
+    ast: "∗", star: "⋆", bullet: "•", oplus: "⊕", ominus: "⊖",
+    otimes: "⊗", oslash: "⊘", odot: "⊙",
+    parallel: "∥", perp: "⊥",
+    angle: "∠", triangle: "△", therefore: "∴", because: "∵",
     circ: "°", degree: "°", deg: "°"
   };
 
   const textCommands = new Set(["text", "textrm", "textup", "textnormal", "mathrm", "operatorname"]);
+  const functionCommands = new Set([
+    "arccos", "arcsin", "arctan", "arg", "cos", "cosh", "cot", "coth", "csc",
+    "deg", "det", "dim", "exp", "gcd", "hom", "inf", "ker", "lg", "lim",
+    "liminf", "limsup", "ln", "log", "max", "min", "mod", "Pr", "sec", "sin",
+    "sinh", "sup", "tan", "tanh"
+  ]);
+  const fontCommands = new Map([
+    ["mathbf", "cguml-mbold"],
+    ["boldsymbol", "cguml-mbold"],
+    ["mathit", "cguml-mitalic"],
+    ["mathcal", "cguml-mcal"],
+    ["mathscr", "cguml-mcal"],
+    ["mathbb", "cguml-mbb"],
+    ["mathfrak", "cguml-mfrak"],
+    ["mathsf", "cguml-msans"],
+    ["mathtt", "cguml-mmono"]
+  ]);
+  const accentCommands = new Map([
+    ["bar", "\u0305"],
+    ["overline", "\u0305"],
+    ["hat", "\u0302"],
+    ["widehat", "\u0302"],
+    ["tilde", "\u0303"],
+    ["widetilde", "\u0303"],
+    ["dot", "\u0307"],
+    ["ddot", "\u0308"],
+    ["vec", "\u20d7"]
+  ]);
 
   function escapeHtml(value) {
     return value
@@ -305,10 +350,15 @@
         return escapeHtml(name);
       }
 
-      if (name === "frac") {
+      if (name === "frac" || name === "dfrac" || name === "tfrac") {
         const numerator = parseRequiredArg();
         const denominator = parseRequiredArg();
         return `<span class="cguml-frac"><span>${numerator}</span><span>${denominator}</span></span>`;
+      }
+      if (name === "binom" || name === "dbinom" || name === "tbinom") {
+        const top = parseRequiredArg();
+        const bottom = parseRequiredArg();
+        return `<span class="cguml-binom"><span>${top}</span><span>${bottom}</span></span>`;
       }
       if (name === "sqrt") {
         const value = parseRequiredArg();
@@ -316,6 +366,15 @@
       }
       if (textCommands.has(name)) {
         return `<span class="cguml-mtext">${parseRawRequiredArg()}</span>`;
+      }
+      if (functionCommands.has(name)) {
+        return `<span class="cguml-mop">${escapeHtml(name)}</span>`;
+      }
+      if (fontCommands.has(name)) {
+        return `<span class="${fontCommands.get(name)}">${parseRequiredArg()}</span>`;
+      }
+      if (accentCommands.has(name)) {
+        return `<span class="cguml-maccent">${parseRequiredArg()}${accentCommands.get(name)}</span>`;
       }
       if (name === "quad") {
         return '<span class="cguml-mspace cguml-mspace-quad"></span>';

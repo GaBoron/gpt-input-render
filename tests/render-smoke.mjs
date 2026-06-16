@@ -40,4 +40,26 @@ assert(temperatureHtml.includes("<sup>°</sup>"));
 assert(temperatureHtml.includes('<span class="cguml-mtext">C</span>'));
 assert(temperatureHtml.includes('<span class="cguml-mtext">dc</span><sub><span class="cguml-math-var">A</span></sub>'));
 
+const functionSample = "$\\ln k = -E_a/(RT)+\\log A,\\quad y=\\exp(-x),\\quad \\sin^2 x+\\cos^2 x=1,\\quad a\\leq b\\Rightarrow b\\geq a$";
+const functionHtml = sandbox.__cgumlTest.renderMarkdown(functionSample);
+
+assert(!/\\(ln|log|exp|sin|cos|leq|Rightarrow|geq)/.test(functionHtml), "common math commands should not leak into rendered output");
+assert(functionHtml.includes('<span class="cguml-mop">ln</span>'));
+assert(functionHtml.includes('<span class="cguml-mop">log</span>'));
+assert(functionHtml.includes('<span class="cguml-mop">exp</span>'));
+assert(functionHtml.includes("≤"));
+assert(functionHtml.includes("⇒"));
+assert(functionHtml.includes("≥"));
+
+const broadSample = "$\\dfrac{1}{2}+\\binom{n}{k},\\quad \\varphi\\in A\\subseteq B,\\quad \\forall x\\exists y,\\quad A\\oplus B$";
+const broadHtml = sandbox.__cgumlTest.renderMarkdown(broadSample);
+
+assert(!/\\(dfrac|binom|varphi|in|subseteq|forall|exists|oplus)/.test(broadHtml), "broad common commands should not leak into rendered output");
+assert(broadHtml.includes("φ"));
+assert(broadHtml.includes("∈"));
+assert(broadHtml.includes("⊆"));
+assert(broadHtml.includes("∀"));
+assert(broadHtml.includes("∃"));
+assert(broadHtml.includes("⊕"));
+
 console.log("render smoke test passed");
