@@ -2,6 +2,7 @@
   "use strict";
 
   const PROCESSED = "data-cguml-rendered";
+  const OBSERVED = "data-cguml-observed";
   const RAW_CLASS = "cguml-raw";
   const RENDERED_CLASS = "cguml-rendered";
   const MAX_AUTO_RENDER_CHARS = 12000;
@@ -11,6 +12,7 @@
   const originalText = new WeakMap();
   const pendingContainers = new Set();
   let processScheduled = false;
+  let visibilityObserver;
 
   const greek = {
     alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε", zeta: "ζ",
@@ -469,6 +471,12 @@
     const shouldDefer = !options.force && isHeavyMessage(raw);
     toggle.textContent = shouldDefer ? "Render" : "Raw";
     toggle.addEventListener("click", () => {
+      if (!wrapper.isConnected) {
+        renderWrapper(wrapper, originalText.get(container) || raw);
+        body.replaceChildren(toolbar, wrapper);
+        toggle.textContent = "Raw";
+        return;
+      }
       const showingRaw = wrapper.classList.toggle(RAW_CLASS);
       toggle.textContent = showingRaw ? "Render" : "Raw";
       if (showingRaw) {
@@ -480,16 +488,25 @@
     toolbar.append(toggle);
 
     if (shouldDefer) {
-      renderRawWrapper(wrapper, raw);
+      if (body.parentNode) {
+        body.before(toolbar);
+      } else {
+        body.prepend(toolbar);
+      }
     } else {
       renderWrapper(wrapper, raw);
+      body.replaceChildren(toolbar, wrapper);
     }
-
-    body.replaceChildren(toolbar, wrapper);
   }
 
   function enqueueContainer(container) {
-    if (container instanceof HTMLElement && !container.hasAttribute(PROCESSED)) {
+    if (!(container instanceof HTMLElement) || container.hasAttribute(PROCESSED) || container.hasAttribute(OBSERVED)) {
+      return;
+    }
+    if (visibilityObserver) {
+      container.setAttribute(OBSERVED, "true");
+      visibilityObserver.observe(container);
+    } else {
       pendingContainers.add(container);
     }
   }
@@ -522,6 +539,7 @@
     let count = 0;
     for (const container of pendingContainers) {
       pendingContainers.delete(container);
+      container.removeAttribute(OBSERVED);
       renderUserMessage(container);
       count += 1;
       const budgetUsed = now() - start >= RENDER_BUDGET_MS;
@@ -531,9 +549,22 @@
     if (pendingContainers.size) scheduleProcessQueue();
   }
 
+  if ("IntersectionObserver" in window) {
+    visibilityObserver = new window.IntersectionObserver(entries => {
+      let queued = false;
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        visibilityObserver.unobserve(entry.target);
+        pendingContainers.add(entry.target);
+        queued = true;
+      }
+      if (queued) scheduleProcessQueue();
+    }, { rootMargin: "800px 0px" });
+  }
+
   function scan(root = document) {
     root.querySelectorAll("[data-message-author-role='user']").forEach(enqueueContainer);
-    scheduleProcessQueue();
+    if (!visibilityObserver) scheduleProcessQueue();
   }
 
   const observer = new MutationObserver(mutations => {
