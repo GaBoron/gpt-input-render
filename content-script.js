@@ -23,6 +23,8 @@
     notin: "∉", subset: "⊂", subseteq: "⊆", cup: "∪", cap: "∩"
   };
 
+  const textCommands = new Set(["text", "textrm", "textup", "textnormal", "mathrm", "operatorname"]);
+
   function escapeHtml(value) {
     return value
       .replaceAll("&", "&amp;")
@@ -221,6 +223,11 @@
           out.push(`<span class="cguml-math-group">${parseUntil("}")}</span>`);
           continue;
         }
+        if (/[A-Za-z]/.test(ch)) {
+          out.push(`<span class="cguml-math-var">${escapeHtml(ch)}</span>`);
+          i += 1;
+          continue;
+        }
         out.push(escapeHtml(ch));
         i += 1;
       }
@@ -245,11 +252,56 @@
       return parseUntil("}");
     }
 
+    function parseRawRequiredArg() {
+      while (tex[i] === " ") i += 1;
+      if (tex[i] !== "{") return parseRawAtom();
+      i += 1;
+      let depth = 1;
+      let value = "";
+      while (i < tex.length && depth > 0) {
+        const ch = tex[i];
+        if (ch === "{") {
+          depth += 1;
+          value += ch;
+          i += 1;
+          continue;
+        }
+        if (ch === "}") {
+          depth -= 1;
+          if (depth > 0) value += ch;
+          i += 1;
+          continue;
+        }
+        value += ch;
+        i += 1;
+      }
+      return escapeHtml(value);
+    }
+
+    function parseRawAtom() {
+      const atom = tex[i] || "";
+      i += atom ? 1 : 0;
+      return escapeHtml(atom);
+    }
+
     function parseCommand() {
       i += 1;
       const nameMatch = tex.slice(i).match(/^[A-Za-z]+/);
       const name = nameMatch ? nameMatch[0] : tex[i] || "";
       i += name.length || 1;
+
+      if (name === " " || name === "," || name === ":" || name === ";") {
+        return '<span class="cguml-mspace"></span>';
+      }
+      if (name === "!") {
+        return '<span class="cguml-mspace cguml-mspace-negative"></span>';
+      }
+      if (name === "{" || name === "}") {
+        return escapeHtml(name);
+      }
+      if (name === "%" || name === "$" || name === "&" || name === "#") {
+        return escapeHtml(name);
+      }
 
       if (name === "frac") {
         const numerator = parseRequiredArg();
@@ -259,6 +311,15 @@
       if (name === "sqrt") {
         const value = parseRequiredArg();
         return `<span class="cguml-sqrt"><span>${value}</span></span>`;
+      }
+      if (textCommands.has(name)) {
+        return `<span class="cguml-mtext">${parseRawRequiredArg()}</span>`;
+      }
+      if (name === "quad") {
+        return '<span class="cguml-mspace cguml-mspace-quad"></span>';
+      }
+      if (name === "qquad") {
+        return '<span class="cguml-mspace cguml-mspace-qquad"></span>';
       }
       if (name === "left" || name === "right") {
         return "";
@@ -335,4 +396,3 @@
   scan();
   observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
-

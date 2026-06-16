@@ -179,3 +179,29 @@
   line-height: 0;
 }
 
+.cguml-math-var {
+  font-style: italic;
+}
+
+.cguml-mtext {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-style: normal;
+}
+
+.cguml-mspace {
+  display: inline-block;
+  width: 0.22em;
+}
+
+.cguml-mspace-negative {
+  width: 0;
+  margin-left: -0.12em;
+}
+
+.cguml-mspace-quad {
+  width: 1em;
+}
+
+.cguml-mspace-qquad {
+  width: 2em;
+}
