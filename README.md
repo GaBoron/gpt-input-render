@@ -1,4 +1,4 @@
-# ChatGPT User Markdown and LaTeX Renderer
+# GPT Input Render
 
 English | [简体中文](README.zh-CN.md)
 
@@ -16,7 +16,7 @@ This extension is dependency-free and does not send message content anywhere.
 
 ## Installation
 
-1. Download the release asset named `chatgpt-user-markdown-latex-renderer-v1.0.0.zip`.
+1. Download the release asset named `gpt-input-render-v1.0.0.zip`.
 2. Extract the zip file to a local folder.
 3. Open `chrome://extensions` or `edge://extensions`.
 4. Enable developer mode.

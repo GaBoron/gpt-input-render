@@ -1,4 +1,4 @@
-# ChatGPT 用户 Markdown 与 LaTeX 渲染器
+# GPT 输入渲染器
 
 [English](README.md) | 简体中文
 
@@ -16,7 +16,7 @@
 
 ## 安装
 
-1. 下载名为 `chatgpt-user-markdown-latex-renderer-v1.0.0.zip` 的 release 资产。
+1. 下载名为 `gpt-input-render-v1.0.0.zip` 的 release 资产。
 2. 将 zip 文件解压到本地文件夹。
 3. 打开 `chrome://extensions` 或 `edge://extensions`。
 4. 启用开发者模式。

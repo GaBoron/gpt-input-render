@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "ChatGPT User Markdown and LaTeX Renderer",
+  "name": "GPT Input Render",
   "version": "1.0.0",
   "description": "Renders Markdown and common LaTeX syntax in user messages on ChatGPT web.",
   "icons": {
