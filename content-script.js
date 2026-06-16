@@ -147,7 +147,7 @@
         continue;
       }
 
-      const heading = line.match(/^(#{1,6})\s+(.+)$/);
+      const heading = line.match(/^(#{1,6})(?:\s+|(?=\S))(.+)$/);
       if (heading) {
         const level = heading[1].length;
         blocks.push(`<h${level}>${renderInline(heading[2])}</h${level}>`);
@@ -445,6 +445,12 @@
     return container;
   }
 
+  function getMessageText(body) {
+    const visualText = typeof body.innerText === "string" ? body.innerText : "";
+    const fallbackText = typeof body.textContent === "string" ? body.textContent : "";
+    return (visualText || fallbackText).trimEnd();
+  }
+
   function createRawBlock(raw) {
     const pre = document.createElement("pre");
     pre.textContent = raw;
@@ -467,7 +473,7 @@
     const body = findMessageBody(container);
     if (!body || body.closest("textarea, [contenteditable='true']")) return;
 
-    const raw = body.textContent.trimEnd();
+    const raw = getMessageText(body);
     if (!raw || !hasRenderableSyntax(raw)) return;
 
     originalText.set(container, raw);

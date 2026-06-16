@@ -83,4 +83,13 @@ assert(looseFenceHtml.includes('<span class="cguml-mop">ln</span>'));
 const unterminatedFenceHtml = sandbox.__cgumlTest.renderMarkdown("``` text extra\nconst x = 1;\n$\\ln x$");
 assert(unterminatedFenceHtml.includes("<pre"), "unterminated loose fenced code blocks should not hang");
 
+const markdownSample = "#test\n\n##Test\n\n###TEst\n\n**blod** slim\n\n```python\nprint(\"Hello World\")\n```";
+const markdownHtml = sandbox.__cgumlTest.renderMarkdown(markdownSample);
+
+assert(markdownHtml.includes("<h1>test</h1>"));
+assert(markdownHtml.includes("<h2>Test</h2>"));
+assert(markdownHtml.includes("<h3>TEst</h3>"));
+assert(markdownHtml.includes("<strong>blod</strong> slim"));
+assert(markdownHtml.includes('<pre class="cguml-code"><code data-lang="python">print(&quot;Hello World&quot;)</code></pre>'));
+
 console.log("render smoke test passed");
