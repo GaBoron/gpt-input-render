@@ -4,7 +4,13 @@
   const PROCESSED = "data-cguml-rendered";
   const RAW_CLASS = "cguml-raw";
   const RENDERED_CLASS = "cguml-rendered";
+  const MAX_AUTO_RENDER_CHARS = 12000;
+  const MAX_AUTO_RENDER_MATH_SEGMENTS = 80;
+  const RENDER_BATCH_SIZE = 3;
+  const RENDER_BUDGET_MS = 12;
   const originalText = new WeakMap();
+  const pendingContainers = new Set();
+  let processScheduled = false;
 
   const greek = {
     alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε", zeta: "ζ",
@@ -89,6 +95,12 @@
 
   function hasRenderableSyntax(text) {
     return /(^|\n)\s{0,3}#{1,6}\s|\*\*|__|`|\[.+?\]\(.+?\)|(^|\n)\s*[-*+]\s|\$[^$\n]+\$|\\\(|\\\[|\$\$/m.test(text);
+  }
+
+  function isHeavyMessage(text) {
+    if (text.length > MAX_AUTO_RENDER_CHARS) return true;
+    const mathSegments = text.match(/\$\$|\$[^$\n]+\$|\\\(|\\\[|\\begin\{/g);
+    return Boolean(mathSegments && mathSegments.length > MAX_AUTO_RENDER_MATH_SEGMENTS);
   }
 
   function renderMarkdown(source) {
@@ -419,13 +431,29 @@
     return container;
   }
 
-  function renderUserMessage(container) {
+  function createRawBlock(raw) {
+    const pre = document.createElement("pre");
+    pre.textContent = raw;
+    return pre;
+  }
+
+  function renderWrapper(wrapper, raw) {
+    wrapper.classList.remove(RAW_CLASS);
+    wrapper.innerHTML = renderMarkdown(raw);
+  }
+
+  function renderRawWrapper(wrapper, raw) {
+    wrapper.classList.add(RAW_CLASS);
+    wrapper.replaceChildren(createRawBlock(raw));
+  }
+
+  function renderUserMessage(container, options = {}) {
     if (!(container instanceof HTMLElement) || container.hasAttribute(PROCESSED)) return;
 
     const body = findMessageBody(container);
     if (!body || body.closest("textarea, [contenteditable='true']")) return;
 
-    const raw = body.innerText.trimEnd();
+    const raw = body.textContent.trimEnd();
     if (!raw || !hasRenderableSyntax(raw)) return;
 
     originalText.set(container, raw);
@@ -433,36 +461,89 @@
 
     const wrapper = document.createElement("div");
     wrapper.className = RENDERED_CLASS;
-    wrapper.innerHTML = renderMarkdown(raw);
 
     const toolbar = document.createElement("div");
     toolbar.className = "cguml-toolbar";
     const toggle = document.createElement("button");
     toggle.type = "button";
-    toggle.textContent = "Raw";
+    const shouldDefer = !options.force && isHeavyMessage(raw);
+    toggle.textContent = shouldDefer ? "Render" : "Raw";
     toggle.addEventListener("click", () => {
       const showingRaw = wrapper.classList.toggle(RAW_CLASS);
       toggle.textContent = showingRaw ? "Render" : "Raw";
-      wrapper.textContent = "";
       if (showingRaw) {
-        const pre = document.createElement("pre");
-        pre.textContent = originalText.get(container) || raw;
-        wrapper.append(pre);
+        renderRawWrapper(wrapper, originalText.get(container) || raw);
       } else {
-        wrapper.innerHTML = renderMarkdown(originalText.get(container) || raw);
+        renderWrapper(wrapper, originalText.get(container) || raw);
       }
     });
     toolbar.append(toggle);
 
+    if (shouldDefer) {
+      renderRawWrapper(wrapper, raw);
+    } else {
+      renderWrapper(wrapper, raw);
+    }
+
     body.replaceChildren(toolbar, wrapper);
   }
 
-  function scan() {
-    document.querySelectorAll("[data-message-author-role='user']").forEach(renderUserMessage);
+  function enqueueContainer(container) {
+    if (container instanceof HTMLElement && !container.hasAttribute(PROCESSED)) {
+      pendingContainers.add(container);
+    }
   }
 
-  const observer = new MutationObserver(() => {
-    window.requestAnimationFrame(scan);
+  function enqueueFromRoot(root) {
+    if (!(root instanceof HTMLElement)) return false;
+    let queued = false;
+    if (root.matches("[data-message-author-role='user']")) {
+      enqueueContainer(root);
+      queued = true;
+    }
+    root.querySelectorAll("[data-message-author-role='user']").forEach(container => {
+      enqueueContainer(container);
+      queued = true;
+    });
+    return queued;
+  }
+
+  function scheduleProcessQueue() {
+    if (processScheduled) return;
+    processScheduled = true;
+    const run = window.requestIdleCallback || (callback => window.setTimeout(() => callback({ timeRemaining: () => 0 }), 16));
+    run(processQueue, { timeout: 250 });
+  }
+
+  function processQueue(deadline) {
+    processScheduled = false;
+    const now = () => (window.performance && window.performance.now ? window.performance.now() : Date.now());
+    const start = now();
+    let count = 0;
+    for (const container of pendingContainers) {
+      pendingContainers.delete(container);
+      renderUserMessage(container);
+      count += 1;
+      const budgetUsed = now() - start >= RENDER_BUDGET_MS;
+      const idleTimeUsed = deadline && deadline.timeRemaining && deadline.timeRemaining() <= 1;
+      if (count >= RENDER_BATCH_SIZE || budgetUsed || idleTimeUsed) break;
+    }
+    if (pendingContainers.size) scheduleProcessQueue();
+  }
+
+  function scan(root = document) {
+    root.querySelectorAll("[data-message-author-role='user']").forEach(enqueueContainer);
+    scheduleProcessQueue();
+  }
+
+  const observer = new MutationObserver(mutations => {
+    let queued = false;
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        queued = enqueueFromRoot(node) || queued;
+      }
+    }
+    if (queued) scheduleProcessQueue();
   });
 
   scan();

@@ -4,8 +4,8 @@ import assert from "node:assert/strict";
 
 let source = fs.readFileSync(new URL("../content-script.js", import.meta.url), "utf8");
 source = source.replace(
-  /  scan\(\);\r?\n  observer\.observe[\s\S]*?\r?\n\}\)\(\);\s*$/,
-  "  globalThis.__cgumlTest = { renderMarkdown };\n})();"
+  /  scan\(\);[\s\S]*?\r?\n\}\)\(\);\s*$/,
+  "  globalThis.__cgumlTest = { renderMarkdown, isHeavyMessage };\n})();"
 );
 
 const sandbox = {
@@ -70,5 +70,10 @@ assert(alignmentHtml.includes('<span class="cguml-mrel">⟶</span>'));
 assert(alignmentHtml.includes('<span class="cguml-mtext">dc</span>'));
 assert(alignmentHtml.includes('<span class="cguml-mtext"> dm</span><sup>3</sup>'));
 assert(alignmentHtml.includes("<sup>°</sup>"));
+
+const longFormulaText = Array.from({ length: 90 }, (_, index) => `$x_${index}=\\ln k$`).join(" ");
+assert(sandbox.__cgumlTest.isHeavyMessage(longFormulaText), "many formulas should defer automatic rendering");
+assert(sandbox.__cgumlTest.isHeavyMessage(`${"a".repeat(12001)} $x$`), "very long messages should defer automatic rendering");
+assert(!sandbox.__cgumlTest.isHeavyMessage(alignmentSample), "ordinary textbook prompts should still auto-render");
 
 console.log("render smoke test passed");
