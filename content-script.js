@@ -98,7 +98,7 @@
   }
 
   function hasRenderableSyntax(text) {
-    return /(^|\n)\s{0,3}#{1,6}\s|\*\*|__|`|\[.+?\]\(.+?\)|(^|\n)\s*[-*+]\s|\$[^$\n]+\$|\\\(|\\\[|\$\$/m.test(text);
+    return /(^|\n)\s{0,3}#{1,6}\s|\*\*|__|`|\[.+?\]\(.+?\)|(^|\n)\s*[-*+]\s|(^|\n)\s{0,3}(```|~~~)|\$[^$\n]+\$|\\\(|\\\[|\$\$/m.test(text);
   }
 
   function isHeavyMessage(text) {
@@ -121,12 +121,14 @@
         continue;
       }
 
-      const fence = line.match(/^```\s*([^`]*)?$/);
+      const fence = line.match(/^\s{0,3}(```|~~~)\s*([^`]*)?$/);
       if (fence) {
-        const lang = (fence[1] || "").trim().split(/\s+/)[0] || "";
+        const marker = fence[1];
+        const lang = (fence[2] || "").trim().split(/\s+/)[0] || "";
         const code = [];
         i += 1;
-        while (i < lines.length && !/^```\s*$/.test(lines[i])) {
+        const closePattern = marker === "```" ? /^\s{0,3}```\s*$/ : /^\s{0,3}~~~\s*$/;
+        while (i < lines.length && !closePattern.test(lines[i])) {
           code.push(lines[i]);
           i += 1;
         }
@@ -218,8 +220,9 @@
 
   function isBlockStart(lines, index) {
     const line = lines[index] || "";
-    return /^```/.test(line)
-      || /^#{1,6}\s+/.test(line)
+    return /^\s{0,3}```/.test(line)
+      || /^\s{0,3}~~~/.test(line)
+      || /^#{1,6}(?:\s+|(?=\S))/.test(line)
       || /^\s*>/.test(line)
       || /^(\s*)([-*+]|\d+[.)])\s+/.test(line)
       || /^\$\$\s*$/.test(line.trim())
@@ -446,9 +449,71 @@
   }
 
   function getMessageText(body) {
+    const reconstructedText = reconstructMarkdownText(body).trimEnd();
+    if (reconstructedText) return reconstructedText;
     const visualText = typeof body.innerText === "string" ? body.innerText : "";
     const fallbackText = typeof body.textContent === "string" ? body.textContent : "";
     return (visualText || fallbackText).trimEnd();
+  }
+
+  function reconstructMarkdownText(root) {
+    if (!root.querySelector || !root.querySelector("pre, code, br")) return "";
+
+    const parts = [];
+    const blockTags = new Set(["DIV", "P", "LI", "UL", "OL", "SECTION", "ARTICLE"]);
+
+    function append(value) {
+      if (value) parts.push(value);
+    }
+
+    function ensureNewline() {
+      if (parts.length && !parts[parts.length - 1].endsWith("\n")) parts.push("\n");
+    }
+
+    function codeLanguage(code) {
+      const explicit = code.getAttribute("data-lang") || code.getAttribute("data-language") || "";
+      if (explicit) return explicit.trim().split(/\s+/)[0];
+      const className = code.getAttribute("class") || "";
+      const match = className.match(/(?:language|lang)-([A-Za-z0-9_-]+)/);
+      return match ? match[1] : "";
+    }
+
+    function walk(node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        append(node.nodeValue || "");
+        return;
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+      const element = node;
+      const tag = element.tagName;
+
+      if (tag === "BR") {
+        append("\n");
+        return;
+      }
+
+      if (tag === "PRE") {
+        const code = element.querySelector("code") || element;
+        const lang = code instanceof HTMLElement ? codeLanguage(code) : "";
+        ensureNewline();
+        append(`\`\`\`${lang}\n${(code.textContent || "").trimEnd()}\n\`\`\``);
+        ensureNewline();
+        return;
+      }
+
+      if (tag === "CODE" && !element.closest("pre")) {
+        append(`\`${element.textContent || ""}\``);
+        return;
+      }
+
+      if (blockTags.has(tag)) ensureNewline();
+      element.childNodes.forEach(walk);
+      if (blockTags.has(tag)) ensureNewline();
+    }
+
+    root.childNodes.forEach(walk);
+    return parts.join("").replace(/\n{3,}/g, "\n\n");
   }
 
   function createRawBlock(raw) {

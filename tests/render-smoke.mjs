@@ -92,4 +92,10 @@ assert(markdownHtml.includes("<h3>TEst</h3>"));
 assert(markdownHtml.includes("<strong>blod</strong> slim"));
 assert(markdownHtml.includes('<pre class="cguml-code"><code data-lang="python">print(&quot;Hello World&quot;)</code></pre>'));
 
+const indentedFenceHtml = sandbox.__cgumlTest.renderMarkdown("   ```js\nconsole.log(1)\n   ```");
+assert(indentedFenceHtml.includes('<pre class="cguml-code"><code data-lang="js">console.log(1)</code></pre>'));
+
+const tildeFenceHtml = sandbox.__cgumlTest.renderMarkdown("~~~python\nprint(1)\n~~~");
+assert(tildeFenceHtml.includes('<pre class="cguml-code"><code data-lang="python">print(1)</code></pre>'));
+
 console.log("render smoke test passed");
