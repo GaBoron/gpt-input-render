@@ -17,9 +17,7 @@ This extension is dependency-free and does not send message content anywhere.
 1. Open `chrome://extensions` or `edge://extensions`.
 2. Enable developer mode.
 3. Choose `Load unpacked`.
-4. Select this folder:
-
-   `C:\Users\GaBoron\Documents\Codex\2026-06-16\gpt-markdown-latex\chatgpt-user-renderer-extension`
+4. Select the folder containing this repository.
 
 5. Open or reload `https://chatgpt.com`.
 
