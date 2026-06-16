@@ -53,6 +53,8 @@ node --check content-script.js
 
 MIT License. See [LICENSE](LICENSE).
 
+Privacy details are available in [PRIVACY.md](PRIVACY.md).
+
 Copyright (c) 2026 GaBoron.
 
 `GPT` and `ChatGPT` are trademarks of OpenAI. This project is an independent browser extension and is not affiliated with, endorsed by, or sponsored by OpenAI.
