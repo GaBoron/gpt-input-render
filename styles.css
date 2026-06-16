@@ -117,14 +117,13 @@
 
 .cguml-math {
   font-family: Cambria Math, STIX Two Math, Latin Modern Math, Times New Roman, serif;
+  line-height: 1;
   white-space: nowrap;
 }
 
 .cguml-math-inline {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.08em;
-  vertical-align: -0.08em;
+  display: inline;
+  vertical-align: baseline;
 }
 
 .cguml-math-display {
@@ -206,13 +205,19 @@
 }
 
 .cguml-mtext {
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: inherit;
   font-style: normal;
 }
 
 .cguml-mop {
+  font-family: inherit;
   font-style: normal;
   margin: 0 0.08em;
+}
+
+.cguml-mrel {
+  display: inline-block;
+  margin: 0 0.24em;
 }
 
 .cguml-mbold {

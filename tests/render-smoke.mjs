@@ -62,4 +62,13 @@ assert(broadHtml.includes("∀"));
 assert(broadHtml.includes("∃"));
 assert(broadHtml.includes("⊕"));
 
+const alignmentSample = "11.21 反应 $A+2B\\longrightarrow D$ 的速率方程为 $-\\text{dc}_A/\\text{dt}=kc_Ac_B$。$25\\text{ }^\\circ\\text{C}$ 时 $k=2\\times10^{-4}\\text{ dm}^3\\cdot\\text{mol}^{-1}\\cdot\\text{s}^{-1}$。";
+const alignmentHtml = sandbox.__cgumlTest.renderMarkdown(alignmentSample);
+
+assert(!/\\(longrightarrow|text|circ|times|cdot)/.test(alignmentHtml), "alignment sample commands should not leak into rendered output");
+assert(alignmentHtml.includes('<span class="cguml-mrel">⟶</span>'));
+assert(alignmentHtml.includes('<span class="cguml-mtext">dc</span>'));
+assert(alignmentHtml.includes('<span class="cguml-mtext"> dm</span><sup>3</sup>'));
+assert(alignmentHtml.includes("<sup>°</sup>"));
+
 console.log("render smoke test passed");

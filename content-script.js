@@ -41,6 +41,14 @@
     circ: "°", degree: "°", deg: "°"
   };
 
+  const relationCommands = new Set([
+    "le", "leq", "ge", "geq", "lt", "gt", "neq", "ne", "equiv", "approx",
+    "asymp", "sim", "simeq", "cong", "propto", "to", "gets", "leftarrow",
+    "rightarrow", "leftrightarrow", "Leftarrow", "Rightarrow", "Leftrightarrow",
+    "mapsto", "longleftarrow", "longrightarrow", "longleftrightarrow",
+    "Longleftarrow", "Longrightarrow", "Longleftrightarrow", "in", "ni", "notin",
+    "subset", "supset", "subseteq", "supseteq", "parallel", "perp"
+  ]);
   const textCommands = new Set(["text", "textrm", "textup", "textnormal", "mathrm", "operatorname"]);
   const functionCommands = new Set([
     "arccos", "arcsin", "arctan", "arg", "cos", "cosh", "cot", "coth", "csc",
@@ -388,7 +396,10 @@
       if (name === "cdots") return "⋯";
       if (name === "ldots") return "…";
       if (greek[name]) return greek[name];
-      if (operators[name]) return operators[name];
+      if (operators[name]) {
+        const value = operators[name];
+        return relationCommands.has(name) ? `<span class="cguml-mrel">${value}</span>` : value;
+      }
       return escapeHtml(`\\${name}`);
     }
 
