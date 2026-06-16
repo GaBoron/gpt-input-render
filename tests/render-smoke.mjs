@@ -32,5 +32,12 @@ assert(html.includes('<span class="cguml-mtext">N</span>'));
 assert(html.includes('<span class="cguml-mtext">kg</span>'));
 assert(html.includes("10<sup>-3</sup>"));
 
-console.log("render smoke test passed");
+const temperatureSample = "11.31 某反应的速率方程为 $-\\text{dc}_A/\\text{dt}=kc_A^n$，其由相同初始浓度开始到转化率达 $20\\%$ 所需时间，在 $40\\text{ }^\\circ\\text{C}$ 时为 $15\\text{ min}$, $60\\text{ }^\\circ\\text{C}$ 时为 $3\\text{ min}$。试计算此反应的活化能。";
+const temperatureHtml = sandbox.__cgumlTest.renderMarkdown(temperatureSample);
 
+assert(!temperatureHtml.includes("\\circ"), "degree commands should not leak into rendered output");
+assert(temperatureHtml.includes("<sup>°</sup>"));
+assert(temperatureHtml.includes('<span class="cguml-mtext">C</span>'));
+assert(temperatureHtml.includes('<span class="cguml-mtext">dc</span><sub><span class="cguml-math-var">A</span></sub>'));
+
+console.log("render smoke test passed");

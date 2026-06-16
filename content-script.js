@@ -20,7 +20,8 @@
     neq: "≠", approx: "≈", sim: "∼", infty: "∞", partial: "∂", nabla: "∇",
     to: "→", leftarrow: "←", rightarrow: "→", leftrightarrow: "↔",
     sum: "∑", prod: "∏", int: "∫", exists: "∃", forall: "∀", in: "∈",
-    notin: "∉", subset: "⊂", subseteq: "⊆", cup: "∪", cap: "∩"
+    notin: "∉", subset: "⊂", subseteq: "⊆", cup: "∪", cap: "∩",
+    circ: "°", degree: "°", deg: "°"
   };
 
   const textCommands = new Set(["text", "textrm", "textup", "textnormal", "mathrm", "operatorname"]);
@@ -242,6 +243,7 @@
       if (tex[i] === "\\") return parseCommand();
       const atom = tex[i] || "";
       i += atom ? 1 : 0;
+      if (/[A-Za-z]/.test(atom)) return `<span class="cguml-math-var">${escapeHtml(atom)}</span>`;
       return escapeHtml(atom);
     }
 
