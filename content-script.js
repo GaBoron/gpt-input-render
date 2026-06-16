@@ -9,6 +9,8 @@
   const MAX_AUTO_RENDER_MATH_SEGMENTS = 80;
   const RENDER_BATCH_SIZE = 3;
   const RENDER_BUDGET_MS = 12;
+  const MAX_MARKDOWN_BLOCKS = 5000;
+  const MAX_PARAGRAPH_LINES = 1000;
   const originalText = new WeakMap();
   const pendingContainers = new Set();
   let processScheduled = false;
@@ -110,7 +112,8 @@
     const blocks = [];
     let i = 0;
 
-    while (i < lines.length) {
+    while (i < lines.length && blocks.length < MAX_MARKDOWN_BLOCKS) {
+      const startIndex = i;
       const line = lines[i];
 
       if (!line.trim()) {
@@ -118,9 +121,9 @@
         continue;
       }
 
-      const fence = line.match(/^```([A-Za-z0-9_-]+)?\s*$/);
+      const fence = line.match(/^```\s*([^`]*)?$/);
       if (fence) {
-        const lang = fence[1] || "";
+        const lang = (fence[1] || "").trim().split(/\s+/)[0] || "";
         const code = [];
         i += 1;
         while (i < lines.length && !/^```\s*$/.test(lines[i])) {
@@ -194,11 +197,20 @@
       }
 
       const paragraph = [];
-      while (i < lines.length && lines[i].trim() && !isBlockStart(lines, i)) {
+      while (i < lines.length && paragraph.length < MAX_PARAGRAPH_LINES && lines[i].trim() && !isBlockStart(lines, i)) {
         paragraph.push(lines[i]);
         i += 1;
       }
-      blocks.push(`<p>${renderInline(paragraph.join(" "))}</p>`);
+      if (paragraph.length) {
+        blocks.push(`<p>${renderInline(paragraph.join(" "))}</p>`);
+      } else {
+        blocks.push(`<p>${renderInline(line)}</p>`);
+        i += 1;
+      }
+
+      if (i <= startIndex) {
+        i = startIndex + 1;
+      }
     }
 
     return blocks.join("");

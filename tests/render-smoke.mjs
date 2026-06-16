@@ -76,4 +76,11 @@ assert(sandbox.__cgumlTest.isHeavyMessage(longFormulaText), "many formulas shoul
 assert(sandbox.__cgumlTest.isHeavyMessage(`${"a".repeat(12001)} $x$`), "very long messages should defer automatic rendering");
 assert(!sandbox.__cgumlTest.isHeavyMessage(alignmentSample), "ordinary textbook prompts should still auto-render");
 
+const looseFenceHtml = sandbox.__cgumlTest.renderMarkdown("``` text extra\nconst x = 1;\n```\n\n$\\ln x$");
+assert(looseFenceHtml.includes("<pre"), "loose fenced code blocks should render as code");
+assert(looseFenceHtml.includes('<span class="cguml-mop">ln</span>'));
+
+const unterminatedFenceHtml = sandbox.__cgumlTest.renderMarkdown("``` text extra\nconst x = 1;\n$\\ln x$");
+assert(unterminatedFenceHtml.includes("<pre"), "unterminated loose fenced code blocks should not hang");
+
 console.log("render smoke test passed");
