@@ -16,6 +16,12 @@ This extension is dependency-free and does not send message content anywhere.
 
 ## Installation
 
+### Microsoft Edge Add-ons
+
+GPT Input Render has been submitted to Microsoft Edge Add-ons and is currently in review. The store installation link will be added here after publication.
+
+### Manual Installation
+
 1. Download the release asset named `gpt-input-render-v1.0.0.zip`.
 2. Extract the zip file to a local folder.
 3. Open `chrome://extensions` or `edge://extensions`.

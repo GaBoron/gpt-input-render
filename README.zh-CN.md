@@ -16,6 +16,12 @@
 
 ## 安装
 
+### Microsoft Edge 加载项
+
+GPT 输入渲染器已提交到 Microsoft Edge 加载项，目前正在审核中。发布后会在这里补充商店安装链接。
+
+### 手动安装
+
 1. 下载名为 `gpt-input-render-v1.0.0.zip` 的 release 资产。
 2. 将 zip 文件解压到本地文件夹。
 3. 打开 `chrome://extensions` 或 `edge://extensions`。
