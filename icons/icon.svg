@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Markdown and LaTeX renderer icon">
+  <rect width="128" height="128" rx="28" fill="#303829"/>
+  <path d="M28 88 38 40M56 88 66 40M24 58h48M20 74h48" stroke="#F4F7EF" stroke-width="10" stroke-linecap="round"/>
+  <path d="M88 39h26M88 39l22 25-22 25h28" fill="none" stroke="#D9E66F" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
